@@ -1,0 +1,70 @@
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "FPSCounter"
+screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+local backgroundFrame = Instance.new("Frame")
+backgroundFrame.Name = "BackgroundFrame"
+backgroundFrame.Size = UDim2.new(0, 220, 0, 50)
+backgroundFrame.Position = UDim2.new(0, 10, 0, 10) -- Top-left corner
+backgroundFrame.BackgroundColor3 = Color3.fromRGB(192, 192, 192) -- Silver color
+backgroundFrame.BorderSizePixel = 0
+backgroundFrame.Parent = screenGui
+
+local fpsLabel = Instance.new("TextLabel")
+fpsLabel.Name = "FPSLabel"
+fpsLabel.Size = UDim2.new(1, -20, 1, -10) -- Slightly smaller than the background
+fpsLabel.Position = UDim2.new(0, 10, 0, 5) -- Centered inside the frame
+fpsLabel.BackgroundTransparency = 1
+fpsLabel.TextColor3 = Color3.fromRGB(0, 0, 0) -- Black text
+fpsLabel.Font = Enum.Font.SourceSansBold
+fpsLabel.TextSize = 24
+fpsLabel.Text = "FPS : Calculating..."
+fpsLabel.Parent = backgroundFrame
+
+local lastTime = tick()
+local frameCount = 0
+
+game:GetService("RunService").RenderStepped:Connect(function()
+    frameCount = frameCount + 1
+    local currentTime = tick()
+    if currentTime - lastTime >= 1 then
+        local fps = frameCount / (currentTime - lastTime)
+        fpsLabel.Text = string.format("FPS: %.2f", fps)
+        lastTime = currentTime
+        frameCount = 0
+    end
+end)
+
+local GuiService = game:GetService("GuiService")
+local Players = game:GetService("Players")
+local os_time = os.time()
+
+getgenv().StopUpdate = false
+
+GuiService.ErrorMessageChanged:Connect(function()
+    local Code = GuiService:GetErrorCode().Value
+    if Code >= Enum.ConnectionError.DisconnectErrors.Value then
+        getgenv().StopUpdate = true
+    end
+end)
+
+repeat wait() until game.JobId ~= nil
+
+-- exec status
+local function writeExecutorStatus(status)
+    local username = Players.LocalPlayer.Name  -- Get the player's username
+    pcall(function() 
+        writefile("executor_check_" .. username .. ".txt", status .. ":" .. os_time)  -- username and timestamp
+    end)
+end
+
+-- initial
+writeExecutorStatus("working")
+
+-- Monitor if player teleports or periodically update the status
+while wait(1) do
+    if not getgenv().StopUpdate and Players.LocalPlayer and Players.LocalPlayer:FindFirstChild("PlayerScripts") then 
+        -- Continuously update the working status
+        writeExecutorStatus("working")
+    end
+end
