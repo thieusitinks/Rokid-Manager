@@ -1,5 +1,6 @@
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
+local GuiService = game:GetService("GuiService")
 local LocalPlayer = Players.LocalPlayer
 
 local screenGui = Instance.new("ScreenGui")
@@ -10,18 +11,17 @@ screenGui.DisplayOrder = 100
 
 textLabel.Parent = screenGui
 textLabel.Size = UDim2.new(0, 300, 0, 50)
-textLabel.Position = UDim2.new(0, 10, 0, 10) 
-textLabel.Font = Enum.Font.FredokaOne 
-textLabel.TextScaled = true 
-textLabel.BackgroundTransparency = 1 
+textLabel.Position = UDim2.new(0, 10, 0, 10)
+textLabel.Font = Enum.Font.FredokaOne
+textLabel.TextScaled = true
+textLabel.BackgroundTransparency = 1
 textLabel.TextStrokeTransparency = 0
 
 local function rainbowColor()
-    local Dreamon = 0
-    while true do
-        Dreamon = Dreamon + 0.01
-        if Dreamon > 1 then Dreamon = 0 end
-        textLabel.TextColor3 = Color3.fromHSV(Dreamon, 1, 1) 
+    local dreamon = 0
+    while not getgenv().StopUpdate do
+        dreamon = (dreamon + 0.01) % 1
+        textLabel.TextColor3 = Color3.fromHSV(dreamon, 1, 1)
         RunService.RenderStepped:Wait()
     end
 end
@@ -39,13 +39,12 @@ RunService.RenderStepped:Connect(function()
         lastUpdate = now
 
         local userName = LocalPlayer.Name
-        textLabel.Text = string.format("%s, FPS: %d" | userName, math.floor(fps))
+        textLabel.Text = string.format("%s, FPS: %d", userName, math.floor(fps))
     end
 end)
 
-spawn(rainbowColor)
+task.spawn(rainbowColor)
 
--- Check Executor
 local GuiService = game:GetService("GuiService")
 local Players = game:GetService("Players")
 local os_time = os.time()
@@ -53,29 +52,26 @@ local os_time = os.time()
 getgenv().StopUpdate = false
 
 GuiService.ErrorMessageChanged:Connect(function()
-    local Code = GuiService:GetErrorCode().Value
-    if Code >= Enum.ConnectionError.DisconnectErrors.Value then
+    local errorMessage = GuiService:GetErrorMessage() -- Use proper method if available
+    if errorMessage and string.find(errorMessage, "disconnected") then
         getgenv().StopUpdate = true
     end
 end)
 
-repeat wait() until game.JobId ~= nil
-
--- exec status
 local function writeExecutorStatus(status)
-    local username = Players.LocalPlayer.Name  -- Get the player's username
-    pcall(function() 
-        writefile("executor_check_" .. username .. ".txt", status .. ":" .. os_time)  -- username and timestamp
+    local username = LocalPlayer.Name -- Get the player's username
+    pcall(function()
+        writefile("executor_check_" .. username .. ".txt", status .. ":" .. os.time())
     end)
 end
 
--- initial
 writeExecutorStatus("working")
 
--- Monitor if player teleports or periodically update the status
-while wait(1) do
-    if not getgenv().StopUpdate and Players.LocalPlayer and Players.LocalPlayer:FindFirstChild("PlayerScripts") then 
-        -- Continuously update the working status
-        writeExecutorStatus("working")
+task.spawn(function()
+    while not getgenv().StopUpdate do
+        wait(1)
+        if LocalPlayer and LocalPlayer:FindFirstChild("PlayerScripts") then
+            writeExecutorStatus("working")
+        end
     end
-end
+end)
