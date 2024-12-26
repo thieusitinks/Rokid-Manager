@@ -7,7 +7,7 @@ local screenGui = Instance.new("ScreenGui")
 local textLabel = Instance.new("TextLabel")
 
 screenGui.Parent = game.CoreGui
-screenGui.DisplayOrder = 100000
+screenGui.DisplayOrder = 1000000000000000000
 
 textLabel.Parent = screenGui
 textLabel.Size = UDim2.new(0, 300, 0, 50)
