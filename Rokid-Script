@@ -1,13 +1,10 @@
 local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local GuiService = game:GetService("GuiService")
-local LocalPlayer = Players.LocalPlayer
 
 local screenGui = Instance.new("ScreenGui")
 local textLabel = Instance.new("TextLabel")
 
 screenGui.Parent = game.CoreGui
-screenGui.DisplayOrder = 1000000000000000000
+screenGui.DisplayOrder = 100
 
 textLabel.Parent = screenGui
 textLabel.Size = UDim2.new(0, 300, 0, 50)
@@ -18,10 +15,11 @@ textLabel.BackgroundTransparency = 1
 textLabel.TextStrokeTransparency = 0
 
 local function rainbowColor()
-    local dreamon = 0
-    while not getgenv().StopUpdate do
-        dreamon = (dreamon + 0.01) % 1
-        textLabel.TextColor3 = Color3.fromHSV(dreamon, 1, 1)
+    local Dreamon = 0
+    while true do
+        Dreamon = Dreamon + 0.01
+        if Dreamon > 1 then Dreamon = 0 end
+        textLabel.TextColor3 = Color3.fromHSV(Dreamon, 1, 1)
         RunService.RenderStepped:Wait()
     end
 end
@@ -38,12 +36,11 @@ RunService.RenderStepped:Connect(function()
         frameCount = 0
         lastUpdate = now
 
-        local userName = LocalPlayer.Name
-        textLabel.Text = string.format("%s, FPS: %d", userName, math.floor(fps))
+        textLabel.Text = string.format("FPS: %d", math.floor(fps))
     end
 end)
 
-task.spawn(rainbowColor)
+spawn(rainbowColor)
 
 local GuiService = game:GetService("GuiService")
 local Players = game:GetService("Players")
