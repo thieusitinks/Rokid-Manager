@@ -5,30 +5,30 @@ local os_time = os.time()
 getgenv().StopUpdate = false
 
 GuiService.ErrorMessageChanged:Connect(function()
-    local errorMessage = GuiService:GetErrorMessage() -- Use proper method if available
-    if errorMessage and string.find(errorMessage, "disconnected") then
+    local Code = GuiService:GetErrorCode().Value
+    if Code >= Enum.ConnectionError.DisconnectErrors.Value then
         getgenv().StopUpdate = true
     end
 end)
 
+repeat wait() until game.JobId ~= nil
+
 local function writeExecutorStatus(status)
-    local username = LocalPlayer.Name -- Get the player's username
-    pcall(function()
-        writefile("executor_check_" .. username .. ".txt", status .. ":" .. os.time())
+    local username = Players.LocalPlayer.Name  -- Get the player's username
+    pcall(function() 
+        writefile("executor_check_" .. username .. ".txt", status .. ":" .. os_time)  -- username and timestamp
     end)
 end
 
 writeExecutorStatus("working")
 
-task.spawn(function()
-    while not getgenv().StopUpdate do
-        wait(1)
-        if LocalPlayer and LocalPlayer:FindFirstChild("PlayerScripts") then
-            writeExecutorStatus("working")
-        end
+while wait(1) do
+    if not getgenv().StopUpdate and Players.LocalPlayer and Players.LocalPlayer:FindFirstChild("PlayerScripts") then 
+        writeExecutorStatus("working")
     end
-end)
+end
 
+wait(1)
 local RunService = game:GetService("RunService")
 
 local screenGui = Instance.new("ScreenGui")
