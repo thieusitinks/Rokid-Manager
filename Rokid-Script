@@ -1,41 +1,10 @@
-local GuiService = game:GetService("GuiService")
-local Players = game:GetService("Players")
-local os_time = os.time()
-
-getgenv().StopUpdate = false
-
-GuiService.ErrorMessageChanged:Connect(function()
-    local Code = GuiService:GetErrorCode().Value
-    if Code >= Enum.ConnectionError.DisconnectErrors.Value then
-        getgenv().StopUpdate = true
-    end
-end)
-
-repeat wait() until game.JobId ~= nil
-
-local function writeExecutorStatus(status)
-    local username = Players.LocalPlayer.Name  -- Get the player's username
-    pcall(function() 
-        writefile("executor_check_" .. username .. ".txt", status .. ":" .. os_time)  -- username and timestamp
-    end)
-end
-
-writeExecutorStatus("working")
-
-while wait(1) do
-    if not getgenv().StopUpdate and Players.LocalPlayer and Players.LocalPlayer:FindFirstChild("PlayerScripts") then 
-        writeExecutorStatus("working")
-    end
-end
-
-wait(1)
 local RunService = game:GetService("RunService")
 
 local screenGui = Instance.new("ScreenGui")
 local textLabel = Instance.new("TextLabel")
 
 screenGui.Parent = game.CoreGui
-screenGui.DisplayOrder = 10000000000000000
+screenGui.DisplayOrder = 100000000000000000
 
 textLabel.Parent = screenGui
 textLabel.Size = UDim2.new(0, 300, 0, 50)
@@ -72,3 +41,33 @@ RunService.RenderStepped:Connect(function()
 end)
 
 spawn(rainbowColor)
+
+local GuiService = game:GetService("GuiService")
+local Players = game:GetService("Players")
+local os_time = os.time()
+
+getgenv().StopUpdate = false
+
+GuiService.ErrorMessageChanged:Connect(function()
+    local Code = GuiService:GetErrorCode().Value
+    if Code >= Enum.ConnectionError.DisconnectErrors.Value then
+        getgenv().StopUpdate = true
+    end
+end)
+
+repeat wait() until game.JobId ~= nil
+
+local function writeExecutorStatus(status)
+    local username = Players.LocalPlayer.Name  -- Get the player's username
+    pcall(function() 
+        writefile("executor_check_" .. username .. ".txt", status .. ":" .. os_time)  -- username and timestamp
+    end)
+end
+
+writeExecutorStatus("working")
+
+while wait(1) do
+    if not getgenv().StopUpdate and Players.LocalPlayer and Players.LocalPlayer:FindFirstChild("PlayerScripts") then 
+        writeExecutorStatus("working")
+    end
+end
